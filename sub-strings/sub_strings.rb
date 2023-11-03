@@ -2,14 +2,14 @@ dictionary = ["below","down","go","going","horn","how","howdy","it","i","low","o
 
 
 def substrings(word, array_of_substrings)
-    separate_words = words.scan("/\b\w+\b").map {|word| word.downcase}
+    separate_words = word.scan(/\b\w+\b/).map {|input_word| input_word.downcase}
     occurence_hash = Hash.new()
-    dictionary.each do |word|
-        if word in separate_words
+    array_of_substrings.each do |word|
+        if separate_words.include?(word)
             occurence_hash[word] = separate_words.count(word)
         end
     end
     return occurence_hash
 end
 
-puts substrings("Howdy partner, sit down! How's it going?", dictionary)
+puts substrings("Howdy howdy partner, sit down! How's it going mate?", dictionary)
