@@ -1,15 +1,19 @@
 def stock_picker(stock)
     profit = 0
     profit_days_array = []
-    stock_picker.each_with_index do |day_price, day|
-        stock_picker.each_with_index do |second_day_price, second_day|
+    stock.each_with_index do |day_price, day|
+        stock.each_with_index do |second_day_price, second_day|
             if second_day - day > 0 && second_day != day
-                profit = day_price - second_day_price
+                profit = second_day_price - day_price
                 profit_days_array.push([profit, day_price, second_day_price])
             end
         end
     end
-    profit_days_array
+    profit_days_array.each do |day_details|
+        puts "Buying price is #{day_details[1]}, selling price is #{day_details[2]}, total profit is #{day_details[0]}" 
+    end
+    all_profits = profit_days_array.select {day_details | day_details[0]}
+    puts all_profits
 end
 
 
