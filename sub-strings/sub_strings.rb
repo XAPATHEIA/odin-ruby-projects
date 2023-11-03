@@ -10,7 +10,11 @@ def substrings(word, array_of_substrings)
         end
         separate_words.each do |single_word|
             if single_word.include?(array_word) && single_word.length != array_word.length
-                occurence_hash[array_word] = single_word
+                if occurence_hash.has_key?(array_word)
+                    occurence_hash[array_word] += 1
+                else
+                    occurence_hash[array_word] = 1
+                end
             end
         end
     end
