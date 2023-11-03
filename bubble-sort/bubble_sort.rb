@@ -1,13 +1,16 @@
 def bubble_sort(numbers)
+  list_of_numbers = numbers
   sorted = false
-  unless sorted
+  while !sorted
     sorted = true
-    numbers.each_with_index do |number, index|
-      if number > numbers[index + 1] && index + 1 < numbers.length
-        numbers[index], numbers[index + 1] = numbers[index + 1], numbers[index]
+    (1...list_of_numbers.length).each do |i|
+      if list_of_numbers[i-1] > list_of_numbers[i]
+        list_of_numbers[i], list_of_numbers[i-1] = list_of_numbers[i-1], list_of_numbers[i]
         sorted = false
       end
     end
+  end
+  list_of_numbers
 end
 
 
