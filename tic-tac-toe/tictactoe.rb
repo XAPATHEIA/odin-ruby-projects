@@ -7,8 +7,6 @@ class Game
 
 
   #TODO: 
-  #1. Implement turn system, find a way to remember between player 1 or 2, maybe
-  #   a class variable is necessary, not sure
   #2. Create a method that begins to populate the board using co-ordinates provided
   #   adjust the "player_choice" method so that it asks the correct player for their
   #   coords. I imagine the loop to constantly call "player_choice" will exist in the
@@ -28,12 +26,13 @@ class Game
     
     # Creates two objects using the Player class
     puts "What is your name?"
-    @player_one = Player.new(gets.chomp)
-    @player_two = Player.new('AI')
+    @player_one = Player.new(gets.chomp, 'X')
+    @player_two = Player.new('AI', 'O')
   end
 
 
   def player_choice
+    if @player_start == 
     puts "Enter your co-ordinates separated by a comma: "
     @coords = gets.chomp.split(",")
     # Until the co-ordinates provided are all integers, are within the board ranges
@@ -46,27 +45,60 @@ class Game
     end
   end
 
-
   def valid_coordinates?(coords)
     coords.length == 2 &&
     coords.all? { |coord| coord.length == 1} &&
     coords.all? { |coord| ('0'..'2').cover?(coord) }
   end
 
-end
+  def score_across
+    if (@board[0][0] != "-" && @board[0][0] == @board[0][1] && @board[0][1] == @board[0][2]) ||
+      (@board[1][0] != "-" && @board[1][0] == @board[1][1] && @board[1][1] == @board[1][2]) ||
+      (@board[2][0] != "-" && @board[2][0] == @board[2][1] && @board[2][1] == @board[2][2])
+      if @player_one.symbol == @board[0][0]
+        puts "#{@player_one.name} wins this round."
+      else
+        puts "#{@player_two.name} wins this round."
+      end
+    end
+  end
+
+  def score_down
+    if (@board[0][0] != "-" && @board[0][0] == @board[1][0] && @board[1][0] == @board[2][0]) ||
+      (@board[0][1] != "-" && @board[0][1] == @board[1][1] && @board[1][1] == @board[2][1])  ||
+      (@board[0][2] != "-" && @board[0][2] == @board[1][2] && @board[1][2] == @board[2][2])
+      if @player_one.symbol == @board[0][0]
+        puts "#{@player_one.name} wins this round."
+      else
+        puts "#{@player_two.name} wins this round."
+      end
+    end
+  end
+
+  def score_diagonal
+    if (@board[0][0] != "-" && @board[0][0] == @board[1][1] && @board[1][1] == @board[2][2]) ||
+      (@board[0][2] != "-" && @board[0][2] == @board[1][1] && @board[1][1] == @board[0][0])
+      if @player_one.symbol == @board[0][0]
+        puts "#{@player_one.name} wins this round."
+      else
+        puts "#{@player_two.name} wins this round"
+      end
+    end
 
 
 class Player
   attr_reader :turn, :name
 
-  def initialize(name)
+  def initialize(name, symbol)
     @turn = rand(1..2)
     @name = name
     @score = 0
+    @symbol = symbol
   end
 
-  # Only allows the score to be accessed by other objects
   protected
+  # Only allows the score and symbol to be accessed by other objects
+  attr_accessor :symbol
   attr_reader :score
 
 end
