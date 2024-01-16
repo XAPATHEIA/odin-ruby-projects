@@ -1,24 +1,7 @@
 class Game
   attr_reader :board, :player_one_name, :player_two_name, :player_start, :coords
 
-  # [0,0] , [0,1] , [0,2]
-  # [1,0] , [1,1] , [1,2]
-  # [2,0] , [2,1] , [2,2]
-
-
-  #TODO: 
-  #2. Create a method that begins to populate the board using co-ordinates provided
-  #   adjust the "player_choice" method so that it asks the correct player for their
-  #   coords. I imagine the loop to constantly call "player_choice" will exist in the
-  #   populate board method, since it will be the method that checks whether it's full
-  #   or not, however, that also means that the methods that check the condition of whether
-  #   the game has been won or not must be written first as that will also need to be called
-  #   as the board is being updated (real-time win or loss)
-  #3. Find a way to play the entire game with only one call to the class object, like
-  #   'class-name.play_game'
-
   def initialize
-    @winner = nil
     @player_start = rand(1..2)
 
     # Creates 3 x 3 board
@@ -28,12 +11,57 @@ class Game
     puts "What is your name?"
     @player_one = Player.new(gets.chomp, 'X')
     @player_two = Player.new('AI', 'O')
+    @player_one.turn = 1
+    @player_two.turn = 2
   end
 
 
+  # TODO: 
+  # 1. Game isn't switching appropriately between AI and Human player
+  # 2. Winning condition checkers don't seem to be passing the entire player object to the method it calls
+  # 3. Have not implemented a system yet that prevents either player from placing their symbol inside somewhere that 
+  #    might already have a symbol.
+
+
+  def valid_coordinates?(coords)
+    coords.length == 2 &&
+    coords.all? { |coord| coord.length == 1} &&
+    coords.all? { |coord| ('0'..'2').cover?(coord) }
+  end
+
+  def toggle_player_choice
+    if (@board.flatten.all? { |section| section == '-' })
+      puts "--- Flipping a coin on who starts first ---"
+      puts "-------------------------------------------"
+      if @player_start == @player_one.turn
+        puts "#{@player_one.name}, enter your co-ordinates separated by a comma: "
+        @current_symbol = @player_one.symbol
+        self.player_choice
+      else
+        puts "#{@player_two.name}, enter your co-ordinates separated by a comma: "
+        @current_symbol = @player_two.symbol
+        self.player_choice
+      end
+    else
+      if @player_start == 1
+        @player_start = 2
+        if @player_start == @player_one.turn
+          puts "#{@player_one.name}, enter your co-ordinates separated by a comma: "
+          @current_symbol = @player_one.symbol
+          self.player_choice
+        end
+      elsif @player_start == 2
+        @player_start = 1
+        if @player_start == @player_two.turn
+          puts "#{@player_one.name}, enter your co-ordinates separated by a comma: "
+          @current_symbol = @player_two.symbol
+          self.player_choice
+        end
+      end
+    end
+  end
+
   def player_choice
-    if @player_start == 
-    puts "Enter your co-ordinates separated by a comma: "
     @coords = gets.chomp.split(",")
     # Until the co-ordinates provided are all integers, are within the board ranges
     # and have no additional whitespace
@@ -45,10 +73,64 @@ class Game
     end
   end
 
-  def valid_coordinates?(coords)
-    coords.length == 2 &&
-    coords.all? { |coord| coord.length == 1} &&
-    coords.all? { |coord| ('0'..'2').cover?(coord) }
+  def choice_placement
+    if @coords == ['0', '0']
+      @board[0][0] = @current_symbol
+    elsif @coords == ['0', '1']
+      @board[0][1] = @current_symbol
+    elsif @coords == ['0', '2']
+      @board[0][2] = @current_symbol
+    elsif @coords == ['1', '0']
+      @board[1][0] = @current_symbol
+    elsif @coords == ['1', '1']
+      @board[1][1] = @current_symbol
+    elsif @coords == ['1', '2']
+      @board[1][2] = @current_symbol
+    elsif @coords == ['2', '0']
+      @board[2][0] = @current_symbol
+    elsif @coords == ['2', '1']
+      @board[2][1] = @current_symbol
+    elsif @coords == ['2', '2']
+      @board[2][2] = @current_symbol
+    end
+  end
+
+  def display_board
+    puts board[0][0] + " | " + board[0][1] + " | " + board[0][2]
+    puts board[1][0] + " | " + board[1][1] + " | " + board[1][2]
+    puts board[2][0] + " | " + board[2][1] + " | " + board[2][2]
+  end
+
+
+  def play_game
+    @winner = nil
+    while @winner == nil
+      if !(@board.flatten.include?("-"))
+        @winner = 'DRAW'
+        puts "The game is a draw!"
+      end
+      puts "#{@player_one.name}'s turn is #{@player_one.turn} right now."
+      puts "#{@player_two.name}'s turn is #{@player_two.turn} right now."
+      puts "Current symbol is #{@current_symbol}"
+      puts "#{@player_one.name}'s current symbol is #{@player_one.symbol}"
+      puts "#{@player_two.name}'s current symbol is #{@player_two.symbol}"
+      self.display_board
+      self.toggle_player_choice
+      self.player_choice
+      self.choice_placement
+      self.score_across
+      self.score_diagonal
+      self.score_down
+      system "clear" 
+    end
+    puts "Thanks for playing!"
+  end
+
+  def declare_winner(player)
+    @winner = true
+    puts "#{@player.name} wins this round."
+    @player.games_won += 1
+    puts "#{@player.name} has won #{player.games_won} game/s."
   end
 
   def score_across
@@ -56,9 +138,9 @@ class Game
       (@board[1][0] != "-" && @board[1][0] == @board[1][1] && @board[1][1] == @board[1][2]) ||
       (@board[2][0] != "-" && @board[2][0] == @board[2][1] && @board[2][1] == @board[2][2])
       if @player_one.symbol == @board[0][0]
-        puts "#{@player_one.name} wins this round."
+        self.declare_winner(@player_one)
       else
-        puts "#{@player_two.name} wins this round."
+        self.declare_winner(@player_two)
       end
     end
   end
@@ -68,9 +150,9 @@ class Game
       (@board[0][1] != "-" && @board[0][1] == @board[1][1] && @board[1][1] == @board[2][1])  ||
       (@board[0][2] != "-" && @board[0][2] == @board[1][2] && @board[1][2] == @board[2][2])
       if @player_one.symbol == @board[0][0]
-        puts "#{@player_one.name} wins this round."
+        self.declare_winner(@player_one)
       else
-        puts "#{@player_two.name} wins this round."
+        self.declare_winner(@player_two)
       end
     end
   end
@@ -79,36 +161,29 @@ class Game
     if (@board[0][0] != "-" && @board[0][0] == @board[1][1] && @board[1][1] == @board[2][2]) ||
       (@board[0][2] != "-" && @board[0][2] == @board[1][1] && @board[1][1] == @board[0][0])
       if @player_one.symbol == @board[0][0]
-        puts "#{@player_one.name} wins this round."
+        self.declare_winner(@player_one)
       else
-        puts "#{@player_two.name} wins this round"
+        self.declare_winner(@player_two)
       end
     end
-
-
-class Player
-  attr_reader :turn, :name
-
-  def initialize(name, symbol)
-    @turn = rand(1..2)
-    @name = name
-    @score = 0
-    @symbol = symbol
   end
 
-  protected
-  # Only allows the score and symbol to be accessed by other objects
-  attr_accessor :symbol
-  attr_reader :score
+end
+
+class Player
+  attr_reader :name
+  attr_accessor :games_won, :turn, :symbol
+
+  def initialize(name, symbol)
+    @games_won = 0
+    @turn = 0
+    @name = name
+    @symbol = symbol
+  end
 
 end
 
 
 
 a = Game.new()
-a.player_choice
-p a.board
-puts a.player_one_name
-puts a.player_two_name
-puts a.player_start
-p a.coords
+a.play_game
