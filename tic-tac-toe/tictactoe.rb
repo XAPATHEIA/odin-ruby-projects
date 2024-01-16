@@ -22,11 +22,14 @@ class Game
   def initialize
     @winner = nil
     @player_start = rand(1..2)
+
+    # Creates 3 x 3 board
     @board = Array.new(3) { Array.new(3, '-') }
-    puts "Player 1 - enter your name: "
-    @player_one_name = gets.chomp
-    puts "Player 2 - enter your name: "
-    @player_two_name = gets.chomp
+    
+    # Creates two objects using the Player class
+    puts "What is your name?"
+    @player_one = Player.new(gets.chomp)
+    @player_two = Player.new('AI')
   end
 
 
@@ -37,17 +40,38 @@ class Game
     # and have no additional whitespace
     # keep correcting user input
 
-    until @coords.all? { |coord| Integer(coord) rescue false } && 
-    @coords.all? { |coord| coord.to_i >= 0 && coord.to_i <= 2} &&
-    @coords.all? { |coord| coord.length == 1} &&
-    @coords.length() == 2 do
+    until valid_coordinates?(@coords) do
       puts "Incorrect format, try again: "
       @coords = gets.chomp.split(",")
     end
   end
 
 
+  def valid_coordinates?(coords)
+    coords.length == 2 &&
+    coords.all? { |coord| coord.length == 1} &&
+    coords.all? { |coord| ('0'..'2').cover?(coord) }
+  end
+
 end
+
+
+class Player
+  attr_reader :turn, :name
+
+  def initialize(name)
+    @turn = rand(1..2)
+    @name = name
+    @score = 0
+  end
+
+  # Only allows the score to be accessed by other objects
+  protected
+  attr_reader :score
+
+end
+
+
 
 a = Game.new()
 a.player_choice
