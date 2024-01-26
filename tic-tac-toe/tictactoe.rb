@@ -17,10 +17,8 @@ class Game
 
 
   # TODO: 
-  # 1. Game isn't switching appropriately between AI and Human player
-  # 2. Winning condition checkers don't seem to be passing the entire player object to the method it calls
-  # 3. Have not implemented a system yet that prevents either player from placing their symbol inside somewhere that 
-  #    might already have a symbol.
+  # 2. Look at array class methods to simplify the score_across etc methods - additionally, the logic is incorrect
+  #    that needs to be fixed.
 
 
   def valid_coordinates?(coords)
@@ -36,11 +34,9 @@ class Game
       if @player_start == @player_one.turn
         puts "#{@player_one.name}, enter your co-ordinates separated by a comma: "
         @current_symbol = @player_one.symbol
-        self.player_choice
       else
         puts "#{@player_two.name}, enter your co-ordinates separated by a comma: "
         @current_symbol = @player_two.symbol
-        self.player_choice
       end
     else
       if @player_start == 1
@@ -48,14 +44,18 @@ class Game
         if @player_start == @player_one.turn
           puts "#{@player_one.name}, enter your co-ordinates separated by a comma: "
           @current_symbol = @player_one.symbol
-          self.player_choice
+        elsif @player_start == @player_two.turn
+          puts "#{@player_two.name}, enter your co-ordinates separated by a comma: "
+          @current_symbol = @player_two.symbol
         end
       elsif @player_start == 2
         @player_start = 1
-        if @player_start == @player_two.turn
+        if @player_start == @player_one.turn
           puts "#{@player_one.name}, enter your co-ordinates separated by a comma: "
+          @current_symbol = @player_one.symbol
+        elsif @player_start == @player_two.turn
+          puts "#{@player_two.name}, enter your co-ordinates separated by a comma: "
           @current_symbol = @player_two.symbol
-          self.player_choice
         end
       end
     end
@@ -71,29 +71,20 @@ class Game
       puts "Incorrect format, try again: "
       @coords = gets.chomp.split(",")
     end
+
+    @coords = @coords.map(&:to_i)
+
+    until @board[@coords[0]][@coords[1]] == "-" do
+      puts "Cell already taken, try again: "
+      @coords = gets.chomp.split(",").map(&:to_i)
+    end
   end
 
   def choice_placement
-    if @coords == ['0', '0']
-      @board[0][0] = @current_symbol
-    elsif @coords == ['0', '1']
-      @board[0][1] = @current_symbol
-    elsif @coords == ['0', '2']
-      @board[0][2] = @current_symbol
-    elsif @coords == ['1', '0']
-      @board[1][0] = @current_symbol
-    elsif @coords == ['1', '1']
-      @board[1][1] = @current_symbol
-    elsif @coords == ['1', '2']
-      @board[1][2] = @current_symbol
-    elsif @coords == ['2', '0']
-      @board[2][0] = @current_symbol
-    elsif @coords == ['2', '1']
-      @board[2][1] = @current_symbol
-    elsif @coords == ['2', '2']
-      @board[2][2] = @current_symbol
-    end
+    row, col = @coords.map(&:to_i)
+    @board[row][col] = @current_symbol
   end
+
 
   def display_board
     puts board[0][0] + " | " + board[0][1] + " | " + board[0][2]
@@ -109,11 +100,10 @@ class Game
         @winner = 'DRAW'
         puts "The game is a draw!"
       end
-      puts "#{@player_one.name}'s turn is #{@player_one.turn} right now."
-      puts "#{@player_two.name}'s turn is #{@player_two.turn} right now."
-      puts "Current symbol is #{@current_symbol}"
-      puts "#{@player_one.name}'s current symbol is #{@player_one.symbol}"
-      puts "#{@player_two.name}'s current symbol is #{@player_two.symbol}"
+      # puts "#{@player_one.name}'s turn is #{@player_one.turn} right now."
+      # puts "#{@player_two.name}'s turn is #{@player_two.turn} right now."
+      # puts "#{@player_one.name}'s current symbol is #{@player_one.symbol}"
+      # puts "#{@player_two.name}'s current symbol is #{@player_two.symbol}"
       self.display_board
       self.toggle_player_choice
       self.player_choice
@@ -121,50 +111,53 @@ class Game
       self.score_across
       self.score_diagonal
       self.score_down
-      system "clear" 
     end
     puts "Thanks for playing!"
   end
 
   def declare_winner(player)
     @winner = true
-    puts "#{@player.name} wins this round."
-    @player.games_won += 1
-    puts "#{@player.name} has won #{player.games_won} game/s."
+    puts "#{player.name} wins this round."
+    player.games_won += 1
+    puts "#{player.name} has won #{player.games_won} game/s."
+  end
+
+  def symbol_player_check(board_symbol)
+    if board_symbol == @player_one.symbol
+      self.declare_winner(@player_one)
+    else
+      self.declare_winner(@player_two)
+    end
   end
 
   def score_across
-    if (@board[0][0] != "-" && @board[0][0] == @board[0][1] && @board[0][1] == @board[0][2]) ||
-      (@board[1][0] != "-" && @board[1][0] == @board[1][1] && @board[1][1] == @board[1][2]) ||
-      (@board[2][0] != "-" && @board[2][0] == @board[2][1] && @board[2][1] == @board[2][2])
-      if @player_one.symbol == @board[0][0]
-        self.declare_winner(@player_one)
-      else
-        self.declare_winner(@player_two)
-      end
+    if (@board[0].none?('-') && @board[0].all? { |symbol| symbol == @board[0][0]})
+      self.symbol_player_check(@board[0][0])
+    elsif (@board[1].none?('-') && @board[1].all? { |symbol| symbol == @board[1][0]})
+      self.symbol_player_check(@board[1][0])
+    elsif (@board[2].none?('-') && @board[2].all? { |symbol| symbol == @board[2][0]})
+      self.symbol_player_check(@board[2][0])
     end
   end
+
 
   def score_down
-    if (@board[0][0] != "-" && @board[0][0] == @board[1][0] && @board[1][0] == @board[2][0]) ||
-      (@board[0][1] != "-" && @board[0][1] == @board[1][1] && @board[1][1] == @board[2][1])  ||
-      (@board[0][2] != "-" && @board[0][2] == @board[1][2] && @board[1][2] == @board[2][2])
-      if @player_one.symbol == @board[0][0]
-        self.declare_winner(@player_one)
-      else
-        self.declare_winner(@player_two)
-      end
+    transposed_board = @board.transpose
+    if (transposed_board[0].none?('-') && transposed_board[0].all? { |symbol| symbol == transposed_board[0][0] })
+      self.symbol_player_check(@current_symbol)
+    elsif (transposed_board[1].none?('-') && transposed_board[1].all? { |symbol| symbol == transposed_board[1][0] })
+      self.symbol_player_check(@current_symbol)
+    elsif (transposed_board[2].none?('-') && transposed_board[2].all? { |symbol| symbol == transposed_board[2][0] })
+      self.symbol_player_check(@current_symbol)
     end
   end
 
+
   def score_diagonal
-    if (@board[0][0] != "-" && @board[0][0] == @board[1][1] && @board[1][1] == @board[2][2]) ||
-      (@board[0][2] != "-" && @board[0][2] == @board[1][1] && @board[1][1] == @board[0][0])
-      if @player_one.symbol == @board[0][0]
-        self.declare_winner(@player_one)
-      else
-        self.declare_winner(@player_two)
-      end
+    if (@board[0][0] != "-" && @board[0][0] == @board[1][1] && @board[1][1] == @board[2][2])
+      self.symbol_player_check(@board[0][0])
+    elsif (@board[0][2] != "-" && @board[0][2] == @board[1][1] && @board[1][1] == @board[0][0])
+      self.symbol_player_check(@board[0][2])
     end
   end
 
