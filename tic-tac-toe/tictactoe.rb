@@ -16,9 +16,29 @@ class Game
   end
 
 
-  # TODO: 
-  # 2. Look at array class methods to simplify the score_across etc methods - additionally, the logic is incorrect
-  #    that needs to be fixed.
+  # IMPROVEMENTS:
+  # 1. Use constants for Magic Values like 'X', 'O' and '-' i.e: 
+  # class Game
+  #   EMPTY_CELL = '-'
+  #   PLAYER_ONE_SYMBOL = 'X'
+  #   PLAYER_TWO_SYMBOL = '0'
+  # end
+  #
+  # 2. Ternary operator for toggle_player_choice
+  #
+  # 3. Combine the Player Choice and Placement methods
+  #
+  # 4. Move draw check so that it's not being checked every round, and rather only
+  #    when the game ends
+  #
+  # 5. Move the board movement options to the Player class as a method
+  #    for more OOP code
+  # 
+  # 6. Making the handling of turns and movement options in the Player class 
+  #    separates the responsibilities of the classes
+
+
+
 
 
   def valid_coordinates?(coords)
@@ -100,10 +120,6 @@ class Game
         @winner = 'DRAW'
         puts "The game is a draw!"
       end
-      # puts "#{@player_one.name}'s turn is #{@player_one.turn} right now."
-      # puts "#{@player_two.name}'s turn is #{@player_two.turn} right now."
-      # puts "#{@player_one.name}'s current symbol is #{@player_one.symbol}"
-      # puts "#{@player_two.name}'s current symbol is #{@player_two.symbol}"
       self.display_board
       self.toggle_player_choice
       self.player_choice
