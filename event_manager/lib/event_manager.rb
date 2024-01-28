@@ -1,18 +1,23 @@
+require 'csv'
 puts 'Event Manager Initialized!'
 
 # Checks if event_attendees.csv exists in cwd
 puts File.exist? "event_attendees.csv"
 
-# Reads the contents of the event_attendees csv
-contents = File.read('event_attendees.csv')
 
-# Reads the file line by line
-lines = File.readlines('event_attendees.csv')
 
-lines.each_with_index do |line, index|
-  next if index == 0
-  columns = line.split(",")
-  name = columns[2]
-  p columns
+contents = CSV.open(
+  'event_attendees.csv', 
+  headers: true,
+  header_converters: :symbol
+)
+
+contents.each do |row|
+  name = row[:first_name]
+  zipcode = row[:zipcode]
+  puts "#{name} #{zipcode}"
+
+  # if the zip code is exactly five digits, assume that it is ok
+  # if the zip code is more than five digits, truncate it to the first five digits
+  # if the zip code is less than five digits, add zeros to the front until it becomes five digits
 end
-
